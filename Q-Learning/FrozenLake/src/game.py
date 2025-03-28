@@ -13,6 +13,8 @@ def run():
 		action = env.action_space.sample() # actions: 0 = left, 1 = down, 2 = right, 3 = up
 		new_state, reward, terminated, truncated,_ = env.step(action)
 
+		#q[state, action] = q[state, action] + 
+
 	env.close()
 
 if __name__=='__main__':
