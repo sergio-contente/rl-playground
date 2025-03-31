@@ -16,7 +16,7 @@ def print_env(env):
 
 def run(episodes, is_training=True, render=False):
     # Create environment - using 4x4 as specified in the code
-    env = gym.make('FrozenLake-v1', map_name='8x8', is_slippery=False, render_mode='human' if render else None)
+    env = gym.make('FrozenLake-v1', map_name='8x8', is_slippery=True, render_mode='human' if render else None)
     
     # Print the environment layout to understand where holes and goals are
     print_env(env)
@@ -37,7 +37,7 @@ def run(episodes, is_training=True, render=False):
     # Hyperparameters - adjusted for better performance
     epsilon = 1.0  # Starting exploration rate
     min_epsilon = 0.01  # Lower minimum exploration for more exploration
-    epsilon_decay_rate = 0.9995  # Slower decay rate
+    epsilon_decay_rate = 0.0005  # Slower decay rate
     
     learning_rate = 0.8  # Higher learning rate
     gamma = 0.95  # Slightly reduced discount factor
@@ -57,15 +57,17 @@ def run(episodes, is_training=True, render=False):
         # Episode loop
         while not terminated and not truncated and step_count < max_steps_per_episode:
             step_count += 1
-            
+            epsilon = min_epsilon + (1.0 - min_epsilon)*np.exp(-epsilon_decay_rate*i)
+
             # Exploration-exploitation balance
             if is_training and np.random.random() < epsilon:
                 action = env.action_space.sample()  # Explore: random action
             else:
                 # Exploit: choose best action (with random tiebreaking to avoid left bias)
-                max_value = np.max(q[state, :])
-                max_indices = np.where(q[state, :] == max_value)[0]
-                action = np.random.choice(max_indices)
+                # max_value = np.max(q[state, :])
+                # max_indices = np.where(q[state, :] == max_value)[0]
+                # action = np.random.choice(max_indices)
+                action = np.argmax(q[state][:])
 
             new_state, reward, terminated, truncated, _ = env.step(action)
             
@@ -98,7 +100,7 @@ def run(episodes, is_training=True, render=False):
         steps_per_episode.append(step_count)
         
         # Decay epsilon after each episode
-        epsilon = max(min_epsilon, epsilon * epsilon_decay_rate)
+        #epsilon = max(min_epsilon, epsilon * epsilon_decay_rate)
 
         # Periodically report progress
         if (i+1) % 100 == 0 or i == 0:
@@ -180,4 +182,4 @@ if __name__ == '__main__':
     # Uncomment to test the learned policy
     print("\nTesting learned policy...")
     time.sleep(1)
-    run(5, is_training=False, render=True)
+    run(100, is_training=False, render=True)
